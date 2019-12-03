@@ -1,4 +1,4 @@
-module Main where
+module Day1 where
 
 
 -- Part1
@@ -36,4 +36,6 @@ part2 = do
 -- dummy
 
 main :: IO ()
-main = pure ()
+main = do
+  part1 >>= print
+  part2 >>= print

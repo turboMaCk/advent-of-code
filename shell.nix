@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 let
   haskellEnv =
-    pkgs.haskell.packages.ghc863.ghcWithPackages
+    pkgs.haskell.packages.ghc865.ghcWithPackages
       (hsPackages: with hsPackages; [
       ]);
 in
