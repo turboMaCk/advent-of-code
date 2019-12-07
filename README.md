@@ -16,4 +16,4 @@ I imposed few rules one myself:
 
 - no libraries (using only base) (This also means no containers or arrays or strings other then [Char] lol)
 - no language extensions (Haskell 98 style)
-- no shared shared modules
+- no shared modules between days
