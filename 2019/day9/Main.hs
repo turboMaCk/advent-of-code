@@ -1,31 +1,41 @@
 module Main (main) where
 
 import qualified Debug.Trace as Debug
-import Data.List
 
 -- Memory
 
-type Mem = [(Int, Int)]
+data Mem = Mem [(Int, Int)]
 
 indexed :: [a] -> [(Int, a)]
 indexed xs = reverse $ snd $ foldr (\a (i, acc) -> (i+1, (i, a):acc)) (0, []) xs
 
 parse :: String -> Mem
-parse str = indexed $ fst $ foldl step ([], "") (str ++ ",")
+parse str = Mem $ indexed $ fst $ foldl step ([], "") (str ++ ",")
   where
     step :: ([Int], String) -> Char ->  ([Int], String)
     step (res, s) ','  = (read s : res, "")
     step (res, s) d    = (res, s ++ [d])
 
 writeMem :: Int -> Int -> Mem -> Mem
-writeMem i a mem
-  | i < 0 = mem
-  | otherwise = (i, a) : filter ((i /=) . fst) mem
+writeMem i a (Mem []) = Mem [(i, a)]
+writeMem i a (Mem xs) = Mem $ writeAssoc xs
+  where
+    writeAssoc [] = [(i, a)]
+    writeAssoc (h:t)
+          | i > fst h = h : writeAssoc t
+          | i == fst h = (i, a):t
+          | otherwise = (i, a):h:t
 
 readMem :: Mem -> Int -> Int
-readMem [] _ = 0
-readMem ((addr, val):t) i | addr == i = val
-                          | otherwise = readMem t i
+readMem (Mem []) _ = 0
+readMem (Mem ((addr, val):t)) i | addr == i = val
+                                | otherwise = readMem (Mem t) i
+
+getData :: Int -> Mem -> [Int]
+getData _ (Mem []) = []
+getData addr (Mem mem@(h:t)) | addr == fst h = snd <$> mem
+                             | addr > fst h  = getData addr (Mem t)
+                             | otherwise     = []
 
 -- Int computer
 
@@ -56,46 +66,34 @@ writeMod '0' = \addr val mem _ -> writeMem addr val mem
 parseInst :: Int -> Op
 parseInst int =
   case norm of
-    "00099"        -> Halt
-    w:m2:m1:"01"   -> Add (readMod m1) (readMod m2) (writeMod w)
-    w:m2:m1:"02"   -> Mul (readMod m1) (readMod m2) (writeMod w)
-    '0':'0':m:"03" -> Read (writeMod m)
-    '0':'0':m:"04" -> Print (readMod m)
-    '0':m2:m1:"05" -> JumpIfTrue (readMod m1) (readMod m2)
-    '0':m2:m1:"06" -> JumpIfFalse (readMod m1) (readMod m2)
-    w:m2:m1:"07"   -> LessThan (readMod m1) (readMod m2) (writeMod w)
-    w:m2:m1:"08"   -> Equals (readMod m1) (readMod m2) (writeMod w)
-    '0':'0':m:"09" -> ShiftRelativeBase (readMod m)
+    ['0','0','0','9','9'] -> Halt
+    [ w , m2, m1,'0','1'] -> Add (readMod m1) (readMod m2) (writeMod w)
+    [ w , m2, m1,'0','2'] -> Mul (readMod m1) (readMod m2) (writeMod w)
+    ['0','0', w ,'0','3'] -> Read (writeMod w)
+    ['0','0', m ,'0','4'] -> Print (readMod m)
+    ['0', m2, m1,'0','5'] -> JumpIfTrue (readMod m1) (readMod m2)
+    ['0', m2, m1,'0','6'] -> JumpIfFalse (readMod m1) (readMod m2)
+    [ w , m2, m1,'0','7'] -> LessThan (readMod m1) (readMod m2) (writeMod w)
+    [ w , m2, m1,'0','8'] -> Equals (readMod m1) (readMod m2) (writeMod w)
+    ['0','0', m ,'0','9'] -> ShiftRelativeBase (readMod m)
     val        -> Debug.trace ("unknown inst: " ++ val) undefined
-    where
-      norm :: String
-      norm =
-        if int < 10 then
-          "0000" ++ show int
-        else if int < 100 then
-          "000" ++ show int
-        else if int < 1000 then
-          "00" ++ show int
-        else if int < 10000 then
-          "0" ++ show int
-        else
-          show int
+    where str = show int
+          norm = replicate (5 - length str) '0' ++ str
 
-data Conf = Conf { getInput :: IO Int
-                 , putOutput :: Int -> IO ()
-                 }
+data Conf m = Conf { getInput :: m Int
+                   , putOutput :: Int -> m ()
+                   }
 
-go :: Conf -> Int -> Int -> Mem -> IO Int
+go :: Monad m => Conf m -> Int -> Int -> Mem -> m Int
 go conf addr rb mem =
-  let (inst:rest) = snd <$> (drop addr $ sortOn fst mem)
+  let (inst:rest) = getData addr mem
   in case (parseInst inst, rest) of
-    (Halt, _) -> pure $ snd $ head mem
+    (Halt, _) -> pure $ head $ getData 0 mem
     (Add r1 r2 w, a':b':t:_) ->
         go conf (addr + 4) rb $ w t ((r1 a' mem rb) + (r2 b' mem rb)) mem rb
     (Mul r1 r2 w, a':b':t:_) ->
         go conf (addr + 4) rb $ w t ((r1 a' mem rb) * (r2 b' mem rb)) mem rb
     (Read w, t':_) -> do
-      putStrLn "provide input"
       val <- getInput conf
       go conf (addr + 2) rb (w t' val mem rb)
     (Print r, a':_) -> do
@@ -125,7 +123,6 @@ main :: IO ()
 main = do
   c <- readFile "input.txt"
   go conf 0 0 (parse c) >>= print
-  where
-    conf = Conf { getInput = read <$> getLine
-                , putOutput = print
-                }
+  where conf = Conf { getInput = read <$> getLine
+                    , putOutput = print
+                    }
