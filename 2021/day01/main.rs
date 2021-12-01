@@ -1,6 +1,6 @@
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-use std::fmt::Debug;
 
 fn calc_increases1(values: &Vec<u32>) -> u32 {
     let mut prev = values[0];
@@ -24,8 +24,13 @@ fn calc_increases2(values: &Vec<u32>) -> u32 {
     let mut p2 = values[1];
     let mut p3 = values[2];
     let mut count: u32 = 0;
+    let mut index = -1;
 
     for val in values {
+        index += 1;
+        if index < 3 {
+            continue;
+        }
         if sum(p1, p2, p3) < sum(p2, p3, *val) {
             count += 1;
         }
