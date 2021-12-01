@@ -7,8 +7,15 @@ let
         text
         vector
       ]);
+
+  measure = pkgs.writeScriptBin "measure" ''
+    $1
+    PID=$!
+    psrecord "{$PID}" --plot "res.png"
+  '';
 in
-pkgs.mkShell {
-  inputsFrom = with pkgs; [ haskellEnv ];
-  buildInputs = [];
+with pkgs;
+mkShell {
+  inputsFrom = [ haskellEnv ];
+  buildInputs = [ measure rustc ];
 }
