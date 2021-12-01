@@ -17,5 +17,5 @@ in
 with pkgs;
 mkShell {
   inputsFrom = [ haskellEnv ];
-  buildInputs = [ measure rustc ];
+  buildInputs = [ measure rustc nodejs ];
 }
