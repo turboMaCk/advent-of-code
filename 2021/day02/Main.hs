@@ -30,11 +30,12 @@ parseMoveUnsafe line =
 data Pos = Pos
     { z :: Int
     , y :: Int
+    , aim :: Int
     }
     deriving (Show)
 
 initPos :: Pos
-initPos = Pos 0 0
+initPos = Pos 0 0 0
 
 posToInt :: Pos -> Int
 posToInt Pos{..} =
@@ -51,6 +52,21 @@ moves1 :: [Move] -> Pos
 moves1 =
     foldl (applyMove) initPos
 
+applyAimed :: Pos -> Move -> Pos
+applyAimed pos Move{..} =
+    case dir of
+        F ->
+            pos
+                { y = steps + (y pos)
+                , z = steps * (aim pos) + (z pos)
+                }
+        D -> pos{aim = steps + (aim pos)}
+        U -> pos{aim = (aim pos) - steps}
+
+moves2 :: [Move] -> Pos
+moves2 =
+    foldl (applyAimed) initPos
+
 input :: String -> IO [String]
 input name = do
     lines <$> readFile name
@@ -59,3 +75,4 @@ main :: IO ()
 main = do
     vals <- fmap parseMoveUnsafe <$> input "day02/input.txt"
     print $ posToInt $ moves1 vals
+    print $ posToInt $ moves2 vals
