@@ -56,9 +56,6 @@ part1 vals =
         epsilonRate = inverse gamaRate
      in toInt gamaRate * toInt epsilonRate
 
-firstBit :: [Char] -> Char
-firstBit (h : _) = h
-
 rating2 :: (Char -> Char -> Bool) -> [String] -> [Char]
 rating2 comp values = go $ fmap (\v -> (v, v)) values
   where
@@ -71,7 +68,7 @@ rating2 comp values = go $ fmap (\v -> (v, v)) values
                 newVals =
                     filter
                         ( \(chars, _) ->
-                            firstBit chars `comp` firstBit mF
+                            head chars `comp` head mF
                         )
                         vals
              in go (fmap (first (drop 1)) newVals)
