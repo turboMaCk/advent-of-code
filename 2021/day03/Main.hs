@@ -34,8 +34,7 @@ mostCommon :: Freq -> Char
 mostCommon Freq{..} = if one >= zero then '1' else '0'
 
 inverse :: [Char] -> [Char]
-inverse =
-    fmap inv
+inverse = fmap inv
   where
     inv ch = if ch == '0' then '1' else '0'
 
