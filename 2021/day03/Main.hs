@@ -1,6 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
+import Data.Bifunctor (first)
+
 input :: String -> IO [String]
 input name = lines <$> readFile name
 
@@ -57,10 +59,6 @@ part1 vals =
 firstBit :: [Char] -> Char
 firstBit (h : _) = h
 
-mapFirst :: (a -> b) -> (a, x) -> (b, x)
-mapFirst f (a, x) =
-    (f a, x)
-
 rating2 :: (Char -> Char -> Bool) -> [String] -> [Char]
 rating2 comp values = go $ fmap (\v -> (v, v)) values
   where
@@ -76,7 +74,7 @@ rating2 comp values = go $ fmap (\v -> (v, v)) values
                             firstBit chars `comp` firstBit mF
                         )
                         vals
-             in go (fmap (mapFirst (drop 1)) newVals)
+             in go (fmap (first (drop 1)) newVals)
 
 part2 :: [String] -> Int
 part2 vals =
