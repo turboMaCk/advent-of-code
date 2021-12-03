@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase      #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 input :: String -> IO [String]
@@ -6,7 +6,7 @@ input name = do
     lines <$> readFile name
 
 data Freq = Freq
-    { one  :: Int
+    { one :: Int
     , zero :: Int
     }
     deriving (Show)
@@ -65,13 +65,11 @@ mapFirst f (a, x) =
 
 rating2 :: (Char -> Char -> Bool) -> [String] -> [Char]
 rating2 comp values =
-    let
-        go = \case
+    let go = \case
             -- We got result, return
             [(_, res)] -> res
             vals ->
-                let
-                    -- ineficient
+                let -- ineficient
                     mF = mostCommons $ frequencies $ fmap fst vals
                     newVals =
                         filter
@@ -91,5 +89,3 @@ main = do
     vals <- input "day03/input.txt"
     print $ part1 vals
     print $ part2 vals
-
--- not: 30
