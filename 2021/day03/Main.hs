@@ -63,21 +63,21 @@ mapFirst f (a, x) =
     (f a, x)
 
 rating2 :: (Char -> Char -> Bool) -> [String] -> [Char]
-rating2 comp values =
-    let go = \case
-            -- We got result, return
-            [(_, res)] -> res
-            vals ->
-                let -- ineficient
-                    mF = mostCommons $ frequencies $ fmap fst vals
-                    newVals =
-                        filter
-                            ( \(chars, _) ->
-                                firstBit chars `comp` firstBit mF
-                            )
-                            vals
-                 in go (fmap (mapFirst (drop 1)) newVals)
-     in go $ fmap (\v -> (v, v)) values
+rating2 comp values = go $ fmap (\v -> (v, v)) values
+  where
+    go = \case
+        -- We got result, return
+        [(_, res)] -> res
+        vals ->
+            let -- ineficient
+                mF = mostCommons $ frequencies $ fmap fst vals
+                newVals =
+                    filter
+                        ( \(chars, _) ->
+                            firstBit chars `comp` firstBit mF
+                        )
+                        vals
+             in go (fmap (mapFirst (drop 1)) newVals)
 
 part2 :: [String] -> Int
 part2 vals =
