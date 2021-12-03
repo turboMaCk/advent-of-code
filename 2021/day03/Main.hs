@@ -24,8 +24,8 @@ updateFreqs freqs chars =
     fmap (uncurry updateFreq) $ zip freqs chars
 
 frequencies :: [[Char]] -> [Freq]
-frequencies =
-    foldl updateFreqs (replicate 12 initReq)
+frequencies vals =
+    foldl updateFreqs (replicate ((length $ head vals)) initReq) vals
 
 mostCommons :: [Freq] -> [Char]
 mostCommons = fmap mostCommon
@@ -59,9 +59,32 @@ part1 vals =
 firstBit :: [Char] -> Char
 firstBit (h : _) = h
 
+mapFirst :: (a -> b) -> (a, x) -> (b, x)
+mapFirst f (a, x) =
+    (f a, x)
+
+rating2 :: (Char -> Char -> Bool) -> [String] -> [Char]
+rating2 comp values =
+    let
+        go = \case
+            -- We got result, return
+            [(_, res)] -> res
+            vals ->
+                let
+                    -- ineficient
+                    mF = mostCommons $ frequencies $ fmap fst vals
+                    newVals =
+                        filter
+                            ( \(chars, _) ->
+                                firstBit chars `comp` firstBit mF
+                            )
+                            vals
+                 in go (fmap (mapFirst (drop 1)) newVals)
+     in go $ fmap (\v -> (v, v)) values
+
 part2 :: [String] -> Int
 part2 vals =
-    0
+    toInt (rating2 (==) vals) * toInt (rating2 (/=) vals)
 
 main :: IO ()
 main = do
