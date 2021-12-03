@@ -2,8 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 input :: String -> IO [String]
-input name = do
-    lines <$> readFile name
+input name = lines <$> readFile name
 
 data Freq = Freq
     { one :: Int
