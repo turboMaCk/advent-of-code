@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 let
   haskellEnv =
-    pkgs.haskell.packages.ghc8104.ghcWithPackages
+    pkgs.haskell.packages.ghc8107.ghcWithPackages
       (hsPackages: with hsPackages; [
         unordered-containers
         text

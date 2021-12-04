@@ -110,6 +110,33 @@ fn part1(turns: Vec<i32>, mut boards: Vec<Board>) {
     println!("{:?}", sum * won_val);
 }
 
+fn part2(turns: Vec<i32>, mut boards: Vec<Board>) {
+    let mut sum: i32 = 0;
+    let mut won_val: i32 = 0;
+    let boards_won: &mut Vec<bool> = &mut boards.clone().into_iter().map(|_| false).collect();
+
+    'lookup: for val in turns.into_iter() {
+        for index in 0..boards.len() {
+            boards[index].mark(val);
+
+            match boards[index].won_sum() {
+                None => {}
+                Some(s) => {
+                    boards_won[index] = true;
+
+                    if boards_won.into_iter().all(|b| *b) {
+                        sum = s;
+                        won_val = val;
+                        break 'lookup;
+                    }
+                }
+            }
+        }
+    }
+
+    println!("{:?}", sum * won_val);
+}
+
 fn main() {
     let file = File::open("day04/input.txt").unwrap();
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
@@ -136,7 +163,7 @@ fn main() {
 
                 // empty line (between boards)
                 if string == "".to_string() {
-                    println!("======");
+                    println!("================");
                     boards.push(current_board.clone());
                     current_board = Board::new();
                 } else {
@@ -149,4 +176,5 @@ fn main() {
     boards.push(current_board.clone());
 
     part1(turns.clone(), boards.clone());
+    part2(turns.clone(), boards);
 }
