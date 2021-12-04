@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
+use std::thread;
 
 const BOARD_SIZE: usize = 5;
 
@@ -107,7 +108,7 @@ fn part1(turns: Vec<i32>, mut boards: Vec<Board>) {
         }
     }
 
-    println!("{:?}", sum * won_val);
+    println!("part1: {:?}", sum * won_val);
 }
 
 fn part2(turns: Vec<i32>, mut boards: Vec<Board>) {
@@ -117,6 +118,9 @@ fn part2(turns: Vec<i32>, mut boards: Vec<Board>) {
 
     'lookup: for val in turns.into_iter() {
         for index in 0..boards.len() {
+            if boards_won[index] {
+                continue;
+            }
             boards[index].mark(val);
 
             match boards[index].won_sum() {
@@ -134,7 +138,7 @@ fn part2(turns: Vec<i32>, mut boards: Vec<Board>) {
         }
     }
 
-    println!("{:?}", sum * won_val);
+    println!("part2: {:?}", sum * won_val);
 }
 
 fn main() {
@@ -159,11 +163,11 @@ fn main() {
             // parse boards
             _ => {
                 let string = line.unwrap();
-                println!("{:?}", string);
+                // println!("{:?}", string);
 
                 // empty line (between boards)
                 if string == "".to_string() {
-                    println!("================");
+                    // println!("================");
                     boards.push(current_board.clone());
                     current_board = Board::new();
                 } else {
@@ -175,6 +179,11 @@ fn main() {
     }
     boards.push(current_board.clone());
 
-    part1(turns.clone(), boards.clone());
+    let boards_c = boards.clone();
+    let turns_c = turns.clone();
+    thread::spawn(move|| {
+        part1(turns_c, boards_c);
+    });
+
     part2(turns.clone(), boards);
 }
