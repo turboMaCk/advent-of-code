@@ -86,6 +86,10 @@ impl Board {
             None
         }
     }
+
+    fn reset(&mut self) {
+        self.cur = 0;
+    }
 }
 
 
@@ -169,7 +173,7 @@ fn main() {
                 if string == "".to_string() {
                     // println!("================");
                     boards.push(current_board.clone());
-                    current_board = Board::new();
+                    current_board.reset();
                 } else {
                     let vals = string.split(" ").filter_map(|v| v.parse().ok());
                     current_board.fill(vals);
