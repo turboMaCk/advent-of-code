@@ -189,5 +189,5 @@ fn main() {
         part1(turns_c, boards_c);
     });
 
-    part2(turns.clone(), boards);
+    part2(turns, boards);
 }
