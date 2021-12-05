@@ -90,8 +90,8 @@ fn main() {
     let mut plane1: Plane = Plane::new();
     let mut plane2: Plane = Plane::new();
 
-    for entry in lines {
-        let entry = entry_.unwrap();
+    for entry_p in lines {
+        let entry = entry_p.unwrap();
         let mut map = entry.split(" -> ").map(|v| Point::from(v.to_string()));
 
         let (p1, p2): (Point, Point) = (map.next().unwrap(), map.next().unwrap());
