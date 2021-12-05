@@ -44,13 +44,13 @@ impl Plane {
         let (start_x, end_x) = (min(p1.x, p2.x), max(p1.x, p2.x));
         let (start_y, end_y) = (min(p1.y, p2.y), max(p1.y, p2.y));
         let len = max(end_x - start_x, end_y - start_y);
-        let change_x = (p2.x - p1.x)/len;
-        let change_y = (p2.y - p1.y)/len;
+        let change_x = (p2.x - p1.x) / len;
+        let change_y = (p2.y - p1.y) / len;
 
         for i in 0..=len {
-            self.add_point(Point{
-                x: p1.x + change_x*i,
-                y: p1.y + change_y*i,
+            self.add_point(Point {
+                x: p1.x + change_x * i,
+                y: p1.y + change_y * i,
             })
         }
     }
