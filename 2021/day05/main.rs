@@ -90,7 +90,7 @@ fn main() {
     let mut plane1: Plane = Plane::new();
     let mut plane2: Plane = Plane::new();
 
-    for (_, entry_) in lines.enumerate() {
+    for entry in lines {
         let entry = entry_.unwrap();
         let mut map = entry.split(" -> ").map(|v| Point::from(v.to_string()));
 
@@ -105,8 +105,8 @@ fn main() {
         }
     }
 
-    println!("plane1:\n{}", plane1.draw(10));
+    // println!("plane1:\n{}", plane1.draw(10));
     println!("part1: {}", plane1.count_at_least(2));
-    println!("plane2:\n{}", plane2.draw(10));
+    // println!("plane2:\n{}", plane2.draw(10));
     println!("part2: {}", plane2.count_at_least(2));
 }
