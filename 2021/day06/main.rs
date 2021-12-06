@@ -65,8 +65,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
 
     let mut sea = Sea::from_vec(init);
-    sea.cycle(256);
 
-    println!("{:?}", sea.count());
+    sea.cycle(80);
+    println!("{}", sea.count());
+    sea.cycle(256-80);
+    println!("{}", sea.count());
     Ok(())
 }
