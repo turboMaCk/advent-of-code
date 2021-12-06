@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs;
 
 type Gen = usize;
-const BABY_FOR: Gen = 9;
+const BABY_FOR: Gen = 2;
 const REPRODUCE_IN: Gen = 7;
 
 #[derive(Debug)]
@@ -24,14 +24,14 @@ impl Sea {
 
     fn cycle(&mut self, steps: usize) {
         for _ in 0..steps {
-            let do_fuck = self.gens[0] + self.babies[0];
+            let do_fuck = self.gens[0];
             // update gens
             for i in 1..REPRODUCE_IN {
                 self.gens[i-1] = self.gens[i];
             }
 
-            // restore elders
-            self.gens[REPRODUCE_IN - 1] = do_fuck ;
+            // restore elders and adulescents
+            self.gens[REPRODUCE_IN - 1] = do_fuck + self.babies[0];
 
             // update babies
             for i in 1..BABY_FOR {
