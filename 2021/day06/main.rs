@@ -1,41 +1,71 @@
 use std::error::Error;
 use std::fs;
 
+type Gen = usize;
+const BABY_FOR: Gen = 9;
+const REPRODUCE_IN: Gen = 7;
+
 #[derive(Debug)]
-struct Sea(Vec<u32>);
+struct Sea{
+    gens: [Gen; REPRODUCE_IN],
+    babies: [Gen; BABY_FOR],
+}
 
 impl Sea {
-    fn from_vec(vec: Vec<u32>) -> Self {
-        Sea(vec)
+    fn from_vec(vec: Vec<Gen>) -> Self {
+        let mut gens = [0; REPRODUCE_IN];
+
+        for gen in vec.iter() {
+            gens[*gen] += 1;
+        }
+
+        Sea{ gens, babies: [0; BABY_FOR] }
     }
 
-    fn cycle(&mut self) {
-        for i in 0..self.0.len() {
-            if self.0[i] == 0 {
-                self.0.push(8);
-                self.0[i] = 6;
-            } else {
-                self.0[i] -= 1;
+    fn cycle(&mut self, steps: usize) {
+        for _ in 0..steps {
+            let do_fuck = self.gens[0] + self.babies[0];
+            // update gens
+            for i in 1..REPRODUCE_IN {
+                self.gens[i-1] = self.gens[i];
             }
+
+            // restore elders
+            self.gens[REPRODUCE_IN - 1] = do_fuck ;
+
+            // update babies
+            for i in 1..BABY_FOR {
+                self.babies[i-1] = self.babies[i];
+            }
+
+            // new borns
+            self.babies[BABY_FOR - 1] = do_fuck;
+
         }
     }
 
     fn count(&self) -> usize {
-        self.0.len()
+        let mut count = 0;
+        for gen in self.gens.iter() {
+            count += gen;
+        }
+
+        for gen in self.babies.iter() {
+            count += gen;
+        }
+
+        count
     }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let init: Vec<u32> = fs::read_to_string("day06/input.txt")?
+    let init: Vec<Gen> = fs::read_to_string("day06/input.txt")?
         .split(",")
         .filter_map(|v| v.trim().parse().ok())
         .collect();
 
     let mut sea = Sea::from_vec(init);
-
-    for _ in 0..80 {
-        sea.cycle();
-    }
+    sea.cycle(256);
 
     println!("{:?}", sea.count());
     Ok(())
