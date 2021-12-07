@@ -5,8 +5,7 @@ use std::fs;
 fn align(input: Vec<i32>) -> i32 {
     let mut lowest_fuel = i32::MAX;
 
-    for item in 0..*input.iter().max().unwrap() {
-        let position = item;
+    for position in 0..*input.iter().max().unwrap() {
         let mut fuel = 0;
 
         for item in input.iter() {
@@ -26,8 +25,7 @@ fn align(input: Vec<i32>) -> i32 {
 fn align2(input: Vec<i32>) -> i32 {
     let mut lowest_fuel = i32::MAX;
 
-    for item in 0..*input.iter().max().unwrap() {
-        let position = item;
+    for position in 0..*input.iter().max().unwrap() {
         let mut fuel: i32 = 0;
 
         for item in input.iter() {
