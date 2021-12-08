@@ -131,7 +131,7 @@ impl CouldBe {
             6 => {
                 if !str.contains(self.d[0]) {
                     return 0;
-                } else if str.contains(self.c[0]) {
+                } else if str.contains(self.e[0]) {
                     return 6;
                 } else {
                     return 9;
@@ -175,6 +175,7 @@ fn detect_digits(chunks: Vec<String>) -> CouldBe {
     // 2, 3 and 5 are 5 five segments
     {
         let strings: Vec<&String> = chunks.iter().filter(|c| c.len() == 5).collect();
+        println!("{}", strings.len());
         // FOUND D!!!
         for posibility in &known.d {
             if strings
@@ -199,7 +200,7 @@ fn detect_digits(chunks: Vec<String>) -> CouldBe {
             if known.a[0] == ch || known.d[0] == ch {
                 continue;
             }
-            if strings[1].chars().collect::<Vec<char>>().contains(&ch) {
+            if strings.iter().all(|str| str.chars().collect::<Vec<char>>().contains(&ch)) {
                 known.g = vec![ch];
             }
         }
@@ -237,7 +238,7 @@ fn detect_digits(chunks: Vec<String>) -> CouldBe {
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let file = File::open("day08/test.txt")?;
+    let file = File::open("day08/input.txt")?;
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
 
     let mut counts = Counts::new();
@@ -251,7 +252,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
         let inputs: Vec<String> = parts[0].split(" ").map(|str| str.to_string()).collect();
 
-        println!("inputs: {:?}", inputs);
+        print!("inputs: {:?}", inputs);
 
         let outputs: Vec<String> = parts[1].split(" ").map(|str| str.to_string()).collect();
 
@@ -260,6 +261,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         for str in outputs.iter() {
             out_val = out_val * 10 + decoder.decode_digit(str);
         }
+
+        println!(" out: {}", out_val);
 
         part2 += out_val;
     }
