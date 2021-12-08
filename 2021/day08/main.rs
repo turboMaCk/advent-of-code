@@ -124,8 +124,6 @@ impl CouldBe {
     }
 }
 
-// struct Decoder(HashMap<string, u32>);
-
 fn detect_digits(chunks: Vec<String>) -> CouldBe {
     let mut known = CouldBe::new();
 
