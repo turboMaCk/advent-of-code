@@ -1,7 +1,6 @@
 use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-use std::assert;
 
 const DIGITS: usize = 9;
 struct Counts([usize; DIGITS]);
@@ -36,22 +35,6 @@ impl Counts {
     fn sum(&self) -> usize {
         self.0.iter().sum()
     }
-}
-
-fn drop_till(point: char, str: &String) -> String {
-    let mut out = String::new();
-    let mut adding = false;
-
-    str.chars().for_each(|ch| {
-        if adding {
-            out.push(ch);
-        }
-        if ch == point {
-            adding = true;
-        }
-    });
-
-    out
 }
 
 /**
@@ -175,7 +158,6 @@ fn detect_digits(chunks: Vec<String>) -> CouldBe {
     // 2, 3 and 5 are 5 five segments
     {
         let strings: Vec<&String> = chunks.iter().filter(|c| c.len() == 5).collect();
-        println!("{}", strings.len());
         // FOUND D!!!
         for posibility in &known.d {
             if strings
@@ -243,18 +225,14 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let mut counts = Counts::new();
     let mut part2 = 0;
-    for (i, line_) in lines.enumerate() {
-        // let output: String = drop_till('|', &line?.clone()).trim().to_string();
-        // counts.in_string(&output);
-
+    for (_, line_) in lines.enumerate() {
         let line = line_?;
+
         let parts: Vec<&str> = line.split(" | ").collect();
-
         let inputs: Vec<String> = parts[0].split(" ").map(|str| str.to_string()).collect();
-
-        print!("inputs: {:?}", inputs);
-
         let outputs: Vec<String> = parts[1].split(" ").map(|str| str.to_string()).collect();
+
+        counts.in_string(&outputs.join(" "));
 
         let decoder = detect_digits(inputs);
         let mut out_val = 0;
@@ -262,13 +240,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
             out_val = out_val * 10 + decoder.decode_digit(str);
         }
 
-        println!(" out: {}", out_val);
-
         part2 += out_val;
     }
 
-    // println!("{}", counts.sum());
-    println!("{}", part2);
+    println!("part1: {}", counts.sum());
+    println!("part2: {}", part2);
 
     Ok(())
 }
