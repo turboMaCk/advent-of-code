@@ -1,0 +1,55 @@
+use std::fs::File;
+use std::io::{BufRead, BufReader, Lines};
+use std::error;
+
+const DIGITS: usize = 9;
+struct Counts([usize;DIGITS]);
+
+impl Counts {
+    fn new() -> Counts {
+        Counts([0;DIGITS])
+    }
+
+    fn add(&mut self, digit: usize) {
+        match digit {
+            1 | 4 | 7 | 8 => self.0[digit] += 1,
+            _ => {}
+        }
+    }
+
+    fn in_string(&mut self, str: &String) {
+        str.split(" ").for_each(|digit_str| {
+            self.add(digit_str.len());
+        });
+    }
+}
+
+fn drop_till(point: char, str: &String) -> String {
+    let mut out = String::new();
+    let mut adding = false;
+
+    str.chars().for_each(|ch| {
+        if adding {
+            out.push(ch);
+        }
+        if ch == point {
+            adding = true;
+        }
+    });
+
+    out
+}
+
+
+fn main() -> Result<(), Box<dyn error::Error>> {
+    let file = File::open("day08/test.txt")?;
+    let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
+
+    let mut counts = Counts::new();
+    for (_, line) in lines.enumerate() {
+        let output : String = drop_till('|', &line?).trim().to_string();
+        counts.in_string(output);
+    }
+
+    Ok(())
+}
