@@ -24,12 +24,11 @@ impl Counts {
         self.0[digit] += 1;
     }
 
-    fn in_string(&mut self, str: &String) {
-        str.split(" ")
-            .for_each(|digit_str| match Counts::from_seg_count(digit_str) {
-                Some(digit) => self.add(digit),
-                None => {}
-            });
+    fn in_string(&mut self, strs: &Vec<String>) {
+        strs.iter().for_each(|digit_str| match Counts::from_seg_count(digit_str) {
+            Some(digit) => self.add(digit),
+            None => {}
+        });
     }
 
     fn sum(&self) -> usize {
@@ -109,7 +108,7 @@ impl CouldBe {
                 } else {
                     return 5;
                 }
-            },
+            }
             // 0,6,9
             6 => {
                 if !str.contains(self.d[0]) {
@@ -119,7 +118,7 @@ impl CouldBe {
                 } else {
                     return 9;
                 }
-            },
+            }
             _ => 0,
         }
     }
@@ -182,7 +181,10 @@ fn detect_digits(chunks: Vec<String>) -> CouldBe {
             if known.a[0] == ch || known.d[0] == ch {
                 continue;
             }
-            if strings.iter().all(|str| str.chars().collect::<Vec<char>>().contains(&ch)) {
+            if strings
+                .iter()
+                .all(|str| str.chars().collect::<Vec<char>>().contains(&ch))
+            {
                 known.g = vec![ch];
             }
         }
@@ -232,7 +234,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         let inputs: Vec<String> = parts[0].split(" ").map(|str| str.to_string()).collect();
         let outputs: Vec<String> = parts[1].split(" ").map(|str| str.to_string()).collect();
 
-        counts.in_string(&outputs.join(" "));
+        counts.in_string(&outputs);
 
         let decoder = detect_digits(inputs);
         let mut out_val = 0;
