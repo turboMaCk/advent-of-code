@@ -143,7 +143,6 @@ fn part1(map: &Map) -> u32 {
     points.iter().map(|p| *p + 1).sum()
 }
 
-// too high 1145970
 fn part2(map: &mut Map) -> usize {
     let mut basins = map.basins();
     println!("{:?}", basins);
