@@ -245,6 +245,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     println!("part1: {}", counts.sum());
     println!("part2: {}", part2);
+    println!("partx: {:?}", chars);
 
     Ok(())
 }
