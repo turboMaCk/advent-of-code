@@ -2,10 +2,10 @@ use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Map(Vec<Vec<u32>>);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Point {
     value: u32,
     x: usize,
@@ -41,24 +41,41 @@ impl Map {
         low_points
     }
 
-    // fn basins(&mut self) -> Vec<u32> {
-    //     let mut low_points = Vec::new();
+    fn solve_basin(&mut self, p: Point) -> usize {
+        // needs to get point again
+        let pnt = self.get_point(p.x,p.y);
+        if pnt.value == 9 {
+            0
+        } else {
+            // ugly mutation
+            self.0[p.y][p.x] = 9;
 
-    //     let basins: Vec<u32> = Vec::new();
+            let mut count = 1;
+            for point in self.get_surrounding(p.x, p.y).iter() {
+                count += self.solve_basin(*point);
+            }
 
-    //     for (y, row) in self.0.iter().enumerate() {
-    //         for (x, cell) in row.iter().enumerate() {
-    //             if (cell == 9) {
-    //                 break;
-    //             }
+            count
+        }
+    }
 
-    //             self.0[y][x] == 9;
-    //             sur = self.get_surrouding(x,y);
-    //         }
-    //     }
+    fn basins(&mut self) -> Vec<usize> {
+        let height = self.0.len();
+        let width = self.0[0].len();
 
-    //     low_points
-    // }
+        let mut basins: Vec<usize> = Vec::new();
+
+        for y in 0..height {
+            for x in 0..width {
+                let basin_size = self.solve_basin(self.get_point(x, y));
+                if basin_size > 0 {
+                    basins.push(basin_size);
+                }
+            }
+        }
+
+        basins
+    }
 
     fn get_point(&self, x: usize, y: usize) -> Point {
         Point {
@@ -120,18 +137,24 @@ impl Map {
     }
 }
 
-/*
-bad: 242, 182
-more than 242
-*/
 fn part1(map: &Map) -> u32 {
     let points = map.low_points();
 
     points.iter().map(|p| *p + 1).sum()
 }
 
+// too high 1145970
+fn part2(map: &mut Map) -> usize {
+    let mut basins = map.basins();
+    println!("{:?}", basins);
+    basins.sort();
+    basins.reverse();
+
+    basins[0] * basins[1] * basins[2]
+}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let file = File::open("day09/test.txt")?;
+    let file = File::open("day09/input.txt")?;
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
 
     let mut map = Map::new();
@@ -140,6 +163,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     }
 
     println!("part1 {:?}", part1(&map));
+    println!("part2 {:?}", part2(&mut map));
 
     Ok(())
 }
