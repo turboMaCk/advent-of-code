@@ -145,7 +145,6 @@ fn part1(map: &Map) -> u32 {
 
 fn part2(map: &mut Map) -> usize {
     let mut basins = map.basins();
-    println!("{:?}", basins);
     basins.sort();
     basins.reverse();
 
