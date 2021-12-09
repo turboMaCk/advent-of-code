@@ -5,6 +5,13 @@ use std::io::{BufRead, BufReader, Lines};
 #[derive(Debug)]
 struct Map(Vec<Vec<u32>>);
 
+#[derive(Debug)]
+struct Point {
+    value: u32,
+    x: usize,
+    y: usize,
+}
+
 impl Map {
     fn new() -> Self {
         Map(Vec::new())
@@ -21,61 +28,95 @@ impl Map {
     }
 
     fn low_points(&self) -> Vec<u32> {
-        let height = self.0.len();
-        let width = self.0[0].len();
-
         let mut low_points = Vec::new();
         for (i, row) in self.0.iter().enumerate() {
             for (j, cell) in row.iter().enumerate() {
-                let mut surrounding = Vec::new();
-
-                // 4 corners
-                if i == 0 && j == 0 {
-                    surrounding.push(self.0[0][1]);
-                    surrounding.push(self.0[1][0]);
-                } else if i == 0 && j + 1 == width {
-                    surrounding.push(self.0[0][width - 2]);
-                    surrounding.push(self.0[1][width - 1]);
-                } else if i + 1 == height && j + 1 == width {
-                    surrounding.push(self.0[height-1][1]);
-                    surrounding.push(self.0[height-2][0]);
-                } else if i + 1 == height && j == 0 {
-                    surrounding.push(self.0[height-1][width - 2]);
-                    surrounding.push(self.0[height-2][width - 1]);
-
-                // 4 edges
-                } else if i == 0 {
-                    surrounding.push(self.0[0][j-1]);
-                    surrounding.push(self.0[0][j+1]);
-                    surrounding.push(self.0[1][j]);
-                } else if j + 1 == width {
-                    surrounding.push(self.0[i-1][j]);
-                    surrounding.push(self.0[i+1][j]);
-                    surrounding.push(self.0[i][j - 1]);
-                } else if i + 1 == height {
-                    surrounding.push(self.0[i][j-1]);
-                    surrounding.push(self.0[i][j+1]);
-                    surrounding.push(self.0[i-1][j]);
-                } else if j == 0 {
-                    surrounding.push(self.0[i-1][j]);
-                    surrounding.push(self.0[i+1][j]);
-                    surrounding.push(self.0[i][j+1]);
-
-                // rest
-                } else {
-                    surrounding.push(self.0[i-1][j]);
-                    surrounding.push(self.0[i+1][j]);
-                    surrounding.push(self.0[i][j-1]);
-                    surrounding.push(self.0[i][j+1]);
-                }
-
-                if surrounding.len() > 0 && surrounding.iter().all(|s| s > cell) {
+                let surrounding = self.get_surrounding(j, i);
+                if surrounding.len() > 0 && surrounding.iter().all(|p| p.value > *cell) {
                     low_points.push(*cell);
                 }
             }
         }
 
         low_points
+    }
+
+    // fn basins(&mut self) -> Vec<u32> {
+    //     let mut low_points = Vec::new();
+
+    //     let basins: Vec<u32> = Vec::new();
+
+    //     for (y, row) in self.0.iter().enumerate() {
+    //         for (x, cell) in row.iter().enumerate() {
+    //             if (cell == 9) {
+    //                 break;
+    //             }
+
+    //             self.0[y][x] == 9;
+    //             sur = self.get_surrouding(x,y);
+    //         }
+    //     }
+
+    //     low_points
+    // }
+
+    fn get_point(&self, x: usize, y: usize) -> Point {
+        Point {
+            x,
+            y,
+            value: self.0[y][x],
+        }
+    }
+
+    fn get_surrounding(&self, x: usize, y: usize) -> Vec<Point> {
+        let i = y;
+        let j = x;
+
+        let height = self.0.len();
+        let width = self.0[0].len();
+        let mut surrounding = Vec::new();
+
+        // 4 corners
+        if i == 0 && j == 0 {
+            surrounding.push(self.get_point(1, 0));
+            surrounding.push(self.get_point(0, 1));
+        } else if i == 0 && j + 1 == width {
+            surrounding.push(self.get_point(width - 2, 0));
+            surrounding.push(self.get_point(width - 1, 1));
+        } else if i + 1 == height && j + 1 == width {
+            surrounding.push(self.get_point(1, height - 1));
+            surrounding.push(self.get_point(0, height - 2));
+        } else if i + 1 == height && j == 0 {
+            surrounding.push(self.get_point(width - 2, height - 1));
+            surrounding.push(self.get_point(width - 1, height - 2));
+
+        // 4 edges
+        } else if i == 0 {
+            surrounding.push(self.get_point(j - 1, 0));
+            surrounding.push(self.get_point(j + 1, 0));
+            surrounding.push(self.get_point(j, 1));
+        } else if j + 1 == width {
+            surrounding.push(self.get_point(j, i - 1));
+            surrounding.push(self.get_point(j, i + 1));
+            surrounding.push(self.get_point(j - 1, i));
+        } else if i + 1 == height {
+            surrounding.push(self.get_point(j - 1, i));
+            surrounding.push(self.get_point(j + 1, i));
+            surrounding.push(self.get_point(j, i - 1));
+        } else if j == 0 {
+            surrounding.push(self.get_point(j, i - 1));
+            surrounding.push(self.get_point(j, i + 1));
+            surrounding.push(self.get_point(j + 1, i));
+
+        // rest
+        } else {
+            surrounding.push(self.get_point(j, i - 1));
+            surrounding.push(self.get_point(j, i + 1));
+            surrounding.push(self.get_point(j - 1, i));
+            surrounding.push(self.get_point(j + 1, i));
+        }
+
+        surrounding
     }
 }
 
@@ -90,7 +131,7 @@ fn part1(map: &Map) -> u32 {
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let file = File::open("day09/input.txt")?;
+    let file = File::open("day09/test.txt")?;
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
 
     let mut map = Map::new();
