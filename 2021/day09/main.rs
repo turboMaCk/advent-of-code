@@ -101,11 +101,11 @@ impl Map {
             surrounding.push(self.get_point(width - 2, 0));
             surrounding.push(self.get_point(width - 1, 1));
         } else if i + 1 == height && j + 1 == width {
-            surrounding.push(self.get_point(1, height - 1));
-            surrounding.push(self.get_point(0, height - 2));
-        } else if i + 1 == height && j == 0 {
             surrounding.push(self.get_point(width - 2, height - 1));
             surrounding.push(self.get_point(width - 1, height - 2));
+        } else if i + 1 == height && j == 0 {
+            surrounding.push(self.get_point(1, height - 1));
+            surrounding.push(self.get_point(0, height - 2));
 
         // 4 edges
         } else if i == 0 {
