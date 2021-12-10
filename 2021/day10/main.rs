@@ -34,7 +34,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     'l: for (_, res) in lines.enumerate() {
         let line = res?;
-        println!("{:?}", line);
 
         let mut stack: Vec<char> = Vec::new();
 
@@ -43,7 +42,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 '(' | '[' | '{' | '<' => stack.push(ch),
                 _ => match stack.pop() {
                     None => {
-                        println!("Error: trailing {}", ch);
+                        // println!("Error: trailing {}", ch);
                         continue 'l;
                     }
                     Some(val) => match (val, ch) {
@@ -52,7 +51,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                         ('{', '}') => {}
                         ('<', '>') => {}
                         (a, b) => {
-                            println!("Error: got {} for {}", b, a);
+                            // println!("Error: got {} for {}", b, a);
                             error_score += score(b);
                             continue 'l;
                         }
