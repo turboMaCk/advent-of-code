@@ -2,7 +2,6 @@ use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 
-
 fn score(illegal: char) -> u32 {
     match illegal {
         ')' => 3,
@@ -13,12 +12,27 @@ fn score(illegal: char) -> u32 {
     }
 }
 
+fn score2(legal: char) -> u64 {
+    match legal {
+        '(' => 1,
+        '[' => 2,
+        '{' => 3,
+        '<' => 4,
+        _ => 0,
+    }
+}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
     let file = File::open("day10/input.txt")?;
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
 
+    // part 1
     let mut error_score = 0;
-    for (_, res) in lines.enumerate() {
+
+    //part 2
+    let mut scores: Vec<u64> = Vec::new();
+
+    'l: for (_, res) in lines.enumerate() {
         let line = res?;
         println!("{:?}", line);
 
@@ -30,7 +44,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 _ => match stack.pop() {
                     None => {
                         println!("Error: trailing {}", ch);
-                        break;
+                        continue 'l;
                     }
                     Some(val) => match (val, ch) {
                         ('(', ')') => {}
@@ -40,15 +54,32 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                         (a, b) => {
                             println!("Error: got {} for {}", b, a);
                             error_score += score(b);
-                            break;
+                            continue 'l;
                         }
                     },
                 },
             }
         }
+
+        // part 2 scores
+        stack.reverse();
+        let mut completion_score = 0;
+        for open in stack.iter() {
+            completion_score *= 5;
+            completion_score += score2(*open);
+        }
+        scores.push(completion_score);
     }
 
     println!("part1: {}", error_score);
+    scores.sort();
+    println!("part2: {:?}", scores[(scores.len() / 2)]);
 
     Ok(())
 }
+
+/*
+1050291827
+973624563
+2421222841
+*/
