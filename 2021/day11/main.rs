@@ -189,6 +189,13 @@ impl Map {
 
         string
     }
+
+    fn size(&self) -> usize {
+        let height = self.0.len();
+        let width = self.0[0].len();
+
+        height * width
+    }
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
@@ -204,23 +211,20 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let mut flashes: u64 = 0;
 
+    let mut map2 = map.clone();
     for _ in 0..100 {
-        flashes += map.step();
+        flashes += map2.step();
     }
-    println!("{}", flashes);
-    // println!("{}", map.print());
+    println!("part1: {}", flashes);
 
-    // println!("----");
-    // map.step();
-    // println!("{}", map.print());
 
-    // println!("----");
-    // map.step();
-    // println!("{}", map.print());
+    let mut step_count: u64 = 1;
+    let size = map.size();
 
-    // println!("----");
-    // map.step();
-    // println!("{}", map.print());
+    while map.step() < size as u64 {
+        step_count += 1;
+    }
+    println!("part2: {}", step_count);
 
     Ok(())
 }
