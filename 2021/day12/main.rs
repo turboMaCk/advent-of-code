@@ -57,6 +57,63 @@ impl Graph {
         self.go_from("start", &path, &mut result);
         result
     }
+
+    fn go_from2(&self, node: &str, path: &Vec<String>, result: &mut Vec<Vec<String>>) {
+        let dests = self.0.get(&node.to_string()).unwrap();
+
+        // avoid cycle
+        // THIS is the different thing
+        if node == "start" {
+            if path.contains(&node.to_string()) {
+                return ()
+            }
+        }
+        let ch = node.chars().next().unwrap();
+
+        if ch.is_lowercase() {
+            let in_path = path.iter().filter(|p| {
+                let chr = p.chars().next().unwrap();
+                chr.is_lowercase()
+            });
+
+            let mut has_double = false;
+            {
+                let mut stack = Vec::new();
+                for thing in in_path.clone() {
+                    if stack.contains(&thing) {
+                        has_double = true;
+                        break
+                    }
+                    stack.push(thing);
+                }
+            }
+
+            if has_double && in_path.collect::<Vec<&String>>().contains(&&node.to_string()) {
+                // padadam pam
+                return ();
+            }
+        }
+
+        let mut this_path = path.clone();
+        this_path.push(node.to_string());
+
+        if node == "end" {
+            result.push(this_path);
+            return ();
+        }
+
+        // continue searching for end
+        dests.iter().for_each(|d| {
+            self.go_from2(d, &this_path, result)
+        });
+    }
+
+    fn go2(&self) -> Vec<Vec<String>> {
+        let mut result = Vec::new();
+        let path = Vec::new();
+        self.go_from2("start", &path, &mut result);
+        result
+    }
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
@@ -72,5 +129,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     }
 
     println!("{}", graph.go().len());
+    println!("{}", graph.go2().len());
     Ok(())
 }
