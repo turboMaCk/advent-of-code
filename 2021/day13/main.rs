@@ -146,10 +146,14 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     }
 
-    paper.alter(instructions[0]);
-    // paper.alter(instructions[1]);
+    for (i, fold) in instructions.iter().enumerate() {
+        if i == 1 {
+            println!("part1 {}", paper.points.len());
+        }
+        paper.alter(*fold);
+    }
+
     println!("{}", paper.print());
-    println!("part1 {}", paper.points.len());
 
     Ok(())
 }
