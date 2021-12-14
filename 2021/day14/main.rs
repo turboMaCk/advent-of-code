@@ -55,7 +55,8 @@ fn part2(list: &LinkedList<char>, map: &HashMap<(char, char), char>) -> u64 {
 
     // progress 40 times
 
-    for _ in 0..40 {
+    // part1 did first 10 steps
+    for _ in 0..30 {
         let mut next_gen: HashMap<(char, char), u64> = HashMap::new();
 
         for ((chr1, chr2), count) in pair_counts.iter() {
@@ -180,13 +181,12 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     }
 
-    let polymer2 = polymer.clone();
     for _ in 0..10 {
         step(&mut polymer, &map);
     }
 
     println!("part1: {}", to_int(&polymer));
-    println!("part2: {}", part2(&polymer2, &map));
+    println!("part2: {}", part2(&polymer, &map));
 
     Ok(())
 }
