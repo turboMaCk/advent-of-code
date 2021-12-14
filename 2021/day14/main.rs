@@ -28,6 +28,107 @@ fn step(list: &mut LinkedList<char>, map: &HashMap<(char, char), char>) {
     }
 }
 
+fn part2(list: &LinkedList<char>, map: &HashMap<(char, char), char>) -> u64 {
+    // compress information to just counts of pairs
+    let mut pair_counts: HashMap<(char, char), u64> = HashMap::new();
+
+    // initialize pair_counts (with correct starting values);
+    let mut cur = list.cursor_front();
+    loop {
+        let current = *cur.current().unwrap();
+        match cur.peek_next() {
+            Some(next) => {
+                match pair_counts.get_mut(&(current, *next)) {
+                    None => {
+                        pair_counts.insert((current, *next), 1);
+                    }
+                    Some(count) => {
+                        *count += 1;
+                    }
+                }
+            },
+            None => break,
+        }
+
+        cur.move_next();
+    }
+
+    // progress 40 times
+
+    for _ in 0..40 {
+        let mut next_gen: HashMap<(char, char), u64> = HashMap::new();
+
+        for ((chr1, chr2), count) in pair_counts.iter() {
+          match map.get(&(*chr1, *chr2)) {
+              None => {
+                  match next_gen.get_mut(&(*chr1, *chr2)) {
+                      None => {
+                          next_gen.insert((*chr1, *chr2), *count);
+                      },
+                      Some(cnt) => {
+                          *cnt += count;
+                      }
+                  }
+              }
+              Some(new) => {
+                  match next_gen.get_mut(&(*chr1, *new)) {
+                      None => {
+                          next_gen.insert((*chr1, *new), *count);
+                      },
+                      Some(cnt) => {
+                          *cnt += count;
+                      }
+                  }
+
+                  match next_gen.get_mut(&(*new, *chr2)) {
+                      None => {
+                          next_gen.insert((*new, *chr2), *count);
+                      },
+                      Some(cnt) => {
+                          *cnt += count;
+                      }
+                  }
+              }
+          }
+        }
+
+        pair_counts = next_gen;
+    }
+
+    // calculate counts
+    let mut counts: HashMap<char,u64> = HashMap::new();
+
+    // every character is counted twice (member of 2 pairs!)
+    for ((chr1, chr2), count) in pair_counts.iter() {
+        match counts.get_mut(chr1) {
+            None => {
+                counts.insert(*chr1, *count / 2);
+            },
+            Some(cnt) => {
+                *cnt += count / 2;
+            }
+        }
+        match counts.get_mut(chr2) {
+            None => {
+                counts.insert(*chr2, *count / 2);
+            },
+            Some(cnt) => {
+                *cnt += count / 2;
+            }
+        }
+    }
+
+    let mut max_val = 0;
+    let mut min_val = u64::MAX;
+
+    for (_, count) in counts.iter() {
+        max_val = max(max_val, *count);
+        min_val = min(min_val, *count);
+    }
+
+    max_val - min_val
+}
+
 fn to_int(list: &LinkedList<char>) -> u64 {
     let mut counts: HashMap<char,u64> = HashMap::new();
 
@@ -54,7 +155,7 @@ fn to_int(list: &LinkedList<char>) -> u64 {
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
-    let file = File::open("day14/test.txt").unwrap();
+    let file = File::open("day14/input.txt").unwrap();
     let lines: Lines<BufReader<File>> = BufReader::new(file).lines();
 
     let mut polymer: LinkedList<char> = LinkedList::new();
@@ -79,17 +180,13 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
     }
 
+    let polymer2 = polymer.clone();
     for _ in 0..10 {
         step(&mut polymer, &map);
     }
 
     println!("part1: {}", to_int(&polymer));
-
-    // for _ in 0..20 {
-    //     step(&mut polymer, &map);
-    // }
-
-    // println!("part2: {}", polymer.len());
+    println!("part2: {}", part2(&polymer2, &map));
 
     Ok(())
 }
