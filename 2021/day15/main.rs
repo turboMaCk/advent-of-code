@@ -149,7 +149,6 @@ impl Map {
                 }
                 Some((score, point)) => {
                     for p in self.get_surrounding(point.x, point.y) {
-                        // avoid cycles!
                         if p == end {
                             res.push(score + end.value);
                             break;
@@ -160,6 +159,7 @@ impl Map {
                                 point_scores.insert(p, score + end.value);
                             }
                             Some(prev_score) => {
+                                // avoid cycles!
                                 if *prev_score <= (score + end.value) {
                                     continue;
                                 }
