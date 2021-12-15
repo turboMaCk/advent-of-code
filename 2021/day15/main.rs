@@ -131,7 +131,7 @@ impl Map {
         self.get_point(0, 0)
     }
 
-    fn part1(&self) -> u32 {
+    fn find_path(&self) -> u32 {
         let start = self.get_start();
         let end = self.get_end();
 
@@ -205,8 +205,17 @@ impl Map {
         // expand down
         for step in 1..5 {
             for vec in original.iter() {
-                self.0
-                    .push(vec.iter().map(|v| if *v + step > 9 { *v + step - 9 } else { *v + step }).collect())
+                self.0.push(
+                    vec.iter()
+                        .map(|v| {
+                            if *v + step > 9 {
+                                *v + step - 9
+                            } else {
+                                *v + step
+                            }
+                        })
+                        .collect(),
+                )
             }
         }
 
@@ -239,9 +248,9 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         map.fill_row(line);
     }
 
-    println!("part1: {}", map.part1());
+    println!("part1: {}", map.find_path());
     map.expand();
-    println!("part2: {}", map.part1());
+    println!("part2: {}", map.find_path());
 
     Ok(())
 }
