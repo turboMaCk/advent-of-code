@@ -1,7 +1,7 @@
 #![feature(map_first_last)]
 
 use std::cmp::min;
-use std::collections::{HashSet, BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
@@ -27,10 +27,8 @@ impl PriorityQueue {
         match self.0.get_mut(&score) {
             None => {
                 self.0.insert(score, vec![point]);
-            },
-            Some(vec) => {
-                vec.push(point)
             }
+            Some(vec) => vec.push(point),
         }
     }
 
@@ -148,7 +146,7 @@ impl Map {
             match queue.pop() {
                 None => {
                     break;
-                },
+                }
                 Some((score, point)) => {
                     for p in self.get_surrounding(point.x, point.y) {
                         // avoid cycles!
@@ -184,6 +182,51 @@ impl Map {
 
         min_v
     }
+
+    fn print(&self) -> String {
+        let height = self.0.len();
+        let width = self.0[0].len();
+
+        let mut string = "".to_string();
+        for y in 0..height {
+            for x in 0..width {
+                string.push_str(&self.0[y][x].to_string());
+            }
+
+            string.push('\n')
+        }
+
+        string
+    }
+
+    fn expand(&mut self) {
+        let original = self.0.clone();
+
+        // expand down
+        for step in 1..5 {
+            for vec in original.iter() {
+                self.0
+                    .push(vec.iter().map(|v| if *v + step > 9 { *v + step - 9 } else { *v + step }).collect())
+            }
+        }
+
+        // expand right
+        let width = self.0[0].len();
+        let height = self.0.len();
+        for step in 1..5 {
+            for j in 0..height {
+                let vec = &mut self.0[j];
+                for i in 0..width {
+                    let mut val = step + vec[i];
+                    if val > 9 {
+                        val -= 9;
+                    }
+
+                    vec.push(val)
+                }
+            }
+        }
+    }
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
@@ -196,7 +239,9 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         map.fill_row(line);
     }
 
-    println!("{}", map.part1());
+    println!("part1: {}", map.part1());
+    map.expand();
+    println!("part2: {}", map.part1());
 
     Ok(())
 }
