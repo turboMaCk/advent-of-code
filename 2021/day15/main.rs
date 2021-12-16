@@ -1,7 +1,6 @@
 #![feature(map_first_last)]
 
-use std::cmp::min;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
 use std::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
@@ -141,7 +140,6 @@ impl Map {
         let mut queue = PriorityQueue::new();
         queue.insert(0, start);
 
-        let mut res = Vec::new();
         loop {
             match queue.pop() {
                 None => {
@@ -149,38 +147,33 @@ impl Map {
                 }
                 Some((score, point)) => {
                     for p in self.get_surrounding(point.x, point.y) {
-                        if p == end {
-                            res.push(score + end.value);
-                            break;
-                        }
+                        let real_score = score + end.value;
 
                         match point_scores.get_mut(&p) {
                             None => {
-                                point_scores.insert(p, score + end.value);
+                                point_scores.insert(p, real_score);
                             }
                             Some(prev_score) => {
                                 // avoid cycles!
-                                if *prev_score <= (score + end.value) {
+                                if *prev_score <= real_score {
                                     continue;
                                 }
 
-                                *prev_score = score + end.value;
+                                *prev_score = real_score;
                             }
                         }
 
-                        queue.insert(score + p.value, p);
+                        if p == end {
+                            break;
+                        }
+
+                        queue.insert(real_score, p);
                     }
                 }
             }
         }
 
-        let mut min_v = u32::MAX;
-
-        for val in res.iter() {
-            min_v = min(min_v, *val);
-        }
-
-        min_v
+        *point_scores.get(&end).unwrap()
     }
 
     fn print(&self) -> String {
