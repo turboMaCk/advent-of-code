@@ -1,5 +1,6 @@
-use std::fs;
+use std::cmp::{max, min};
 use std::error;
+use std::fs;
 
 // we're working with 8bits rather than 4 bits
 fn char_to_byte(ch: char) -> u8 {
@@ -51,7 +52,7 @@ impl Buffer {
         res
     }
 
-    fn read(&mut self, size: usize) -> u32 {
+    fn read(&mut self, size: usize) -> u64 {
         let mut val = 0;
 
         for _ in 0..size {
@@ -77,8 +78,8 @@ impl Buffer {
         str
     }
 
-    fn get_pointer(&self) -> u32 {
-        self.pointer as u32
+    fn get_pointer(&self) -> u64 {
+        self.pointer as u64
     }
 }
 
@@ -88,27 +89,40 @@ fn is_new_line(ch: &char) -> bool {
 
 #[derive(Debug)]
 enum Id {
+    Sum,
+    Product,
+    Min,
+    Max,
     Literal,
-    Operator,
+    Greater,
+    Lesser,
+    Equal,
 }
 
 #[derive(Debug)]
 struct Header {
-    version: u32,
+    version: u64,
     id: Id,
 }
 
 fn read_header(buffer: &mut Buffer) -> Header {
+    use Id::*;
     let version = buffer.read(3);
     let id = match buffer.read(3) {
-        4 => Id::Literal,
-        _ => Id::Operator,
+        0 => Sum,
+        1 => Product,
+        2 => Min,
+        3 => Max,
+        4 => Literal,
+        5 => Greater,
+        6 => Lesser,
+        _ => Equal,
     };
 
-    Header {version, id}
+    Header { version, id }
 }
 
-fn read_literal(buffer: &mut Buffer) -> u32 {
+fn read_literal(buffer: &mut Buffer) -> u64 {
     let mut read_next = true;
 
     let mut value = 0;
@@ -123,8 +137,8 @@ fn read_literal(buffer: &mut Buffer) -> u32 {
 
 #[derive(Debug)]
 enum LengthTypeId {
-    TotalLen(u32),
-    SubPackets(u32),
+    TotalLen(u64),
+    SubPackets(u64),
 }
 
 fn read_operator_len(buffer: &mut Buffer) -> LengthTypeId {
@@ -139,31 +153,138 @@ fn read_operator_len(buffer: &mut Buffer) -> LengthTypeId {
     }
 }
 
-fn part1(buffer: &mut Buffer) -> u32 {
+fn part1(buffer: &mut Buffer) -> u64 {
     let header = read_header(buffer);
-    println!("{:?}", header);
+    // println!("{:?}", header);
     match header.id {
         Id::Literal => {
             read_literal(buffer);
             header.version
+        }
+        _ => match read_operator_len(buffer) {
+            LengthTypeId::TotalLen(bits) => {
+                let start = buffer.get_pointer();
+                let mut sum = header.version;
+                while buffer.get_pointer() < start + bits {
+                    sum += part1(buffer);
+                }
+                sum
+            }
+            LengthTypeId::SubPackets(num) => {
+                let mut sum = header.version;
+                for _ in 0..num {
+                    sum += part1(buffer)
+                }
+                sum
+            }
         },
-        _ => {
+    }
+}
+
+fn part2(buffer: &mut Buffer) -> u64 {
+    use Id::*;
+    let header = read_header(buffer);
+    match header.id {
+        Literal => read_literal(buffer),
+        Sum => {
+            let mut sum: u64 = 0;
             match read_operator_len(buffer) {
                 LengthTypeId::TotalLen(bits) => {
                     let start = buffer.get_pointer();
-                    let mut sum = header.version;
                     while buffer.get_pointer() < start + bits {
-                        sum += part1(buffer);
+                        sum += part2(buffer);
                     }
-                    sum
-                },
-                LengthTypeId::SubPackets(num) => {
-                    let mut sum = header.version;
-                    for _ in 0..num {
-                        sum += part1(buffer)
-                    }
-                    sum
                 }
+                LengthTypeId::SubPackets(num) => {
+                    for _ in 0..num {
+                        sum += part2(buffer);
+                    }
+                }
+            }
+            sum
+        }
+        Product => {
+            let mut prod: u64 = 1;
+            match read_operator_len(buffer) {
+                LengthTypeId::TotalLen(bits) => {
+                    let start = buffer.get_pointer();
+                    while buffer.get_pointer() < start + bits {
+                        prod *= part2(buffer);
+                    }
+                }
+                LengthTypeId::SubPackets(num) => {
+                    for _ in 0..num {
+                        prod *= part2(buffer)
+                    }
+                }
+            }
+            prod
+        }
+        Min => {
+            let mut minv = u64::MAX;
+            match read_operator_len(buffer) {
+                LengthTypeId::TotalLen(bits) => {
+                    let start = buffer.get_pointer();
+                    while buffer.get_pointer() < start + bits {
+                        minv = min(part2(buffer), minv);
+                    }
+                }
+                LengthTypeId::SubPackets(num) => {
+                    for _ in 0..num {
+                        minv = min(minv, part2(buffer));
+                    }
+                }
+            }
+            minv
+        }
+        Max => {
+            let mut maxv: u64 = 0;
+            match read_operator_len(buffer) {
+                LengthTypeId::TotalLen(bits) => {
+                    let start = buffer.get_pointer();
+                    while buffer.get_pointer() < start + bits {
+                        maxv = max(part2(buffer), maxv);
+                    }
+                }
+                LengthTypeId::SubPackets(num) => {
+                    for _ in 0..num {
+                        maxv = max(maxv, part2(buffer));
+                    }
+                }
+            }
+            maxv
+        }
+        Greater => {
+            read_operator_len(buffer);
+            let a = part2(buffer);
+            let b = part2(buffer);
+
+            if a > b {
+                1
+            } else {
+                0
+            }
+        }
+        Lesser => {
+            read_operator_len(buffer);
+            let a = part2(buffer);
+            let b = part2(buffer);
+
+            if a < b {
+                1
+            } else {
+                0
+            }
+        }
+        Equal => {
+            read_operator_len(buffer);
+            let a = part2(buffer);
+            let b = part2(buffer);
+
+            if a == b {
+                1
+            } else {
+                0
             }
         }
     }
@@ -174,8 +295,9 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     let mut buffer = Buffer::from(init);
 
-    println!("{}", buffer.print_bin());
-    println!("part1: {}", part1(&mut buffer));
+    // println!("{}", buffer.print_bin());
+    println!("part1: {}", part1(&mut buffer.clone()));
+    println!("part2: {}, {}", part2(&mut buffer));
 
     Ok(())
 }
