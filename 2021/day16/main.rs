@@ -34,9 +34,9 @@ impl From<String> for Buffer {
 }
 
 impl Buffer {
-    fn get(&self, byte: usize) -> bool {
-        let bucket = byte / 4;
-        let pos = byte % 4;
+    fn get(&self, bit: usize) -> bool {
+        let bucket = bit / 4;
+        let pos = bit % 4;
 
         let int = self.data[bucket];
         let mask = 8 >> pos;
