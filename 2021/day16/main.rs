@@ -297,7 +297,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
     // println!("{}", buffer.print_bin());
     println!("part1: {}", part1(&mut buffer.clone()));
-    println!("part2: {}, {}", part2(&mut buffer));
+    println!("part2: {}", part2(&mut buffer));
 
     Ok(())
 }
