@@ -150,6 +150,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
+#[allow(dead_code)]
 fn draw_grid<F>(x_range: Range<i64>, y_range: Range<i64>, get_char: F)
 where
     F: Fn(i64, i64) -> Option<char>,
