@@ -1,10 +1,10 @@
 use std::cmp::{max, min};
+// use std::collections::HashSet;
 use std::error;
 use std::fs;
+use std::ops::Range;
 
-const MAX_STEPS: i64 = 1024;
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Vec2([i64; 2]);
 
 impl Vec2 {
@@ -38,29 +38,39 @@ impl Vec2 {
         self.0[0] += k;
     }
 
-    fn try_max_height(&mut self, target: &Target, orig_vel: Vec2) -> i64 {
+    fn try_max_height(&mut self, target: &Target, orig_vel: &Vec2) -> i64 {
         let mut max_val = i64::MIN;
-        let mut vel = orig_vel.clone();
+        let mut vel: Vec2 = orig_vel.clone();
 
-        let mut i = 0;
+        // let mut trace: HashSet<Vec2> = HashSet::new();
         loop {
+            // trace.insert(self.clone());
+
             self.add(&vel);
             max_val = max(max_val, self.0[1]);
 
             if target.hit(&self) {
-                println!("hit {:?}", orig_vel);
+                // draw_grid(0..40, -20..20, |x, y| {
+                //     let v = Vec2::new(x, y);
+                //     if trace.contains(&v) {
+                //         return Some('#');
+                //     }
+
+                //     if target.hit(&v) {
+                //         return Some('T');
+                //     }
+                //     None
+                // });
                 break;
             }
 
-            if i == MAX_STEPS {
+            if self.0[1] < target.min_y() || self.0[0] > target.max_x() {
                 max_val = i64::MIN;
                 break;
             }
 
             vel.drag();
             vel.add(&Vec2::new(0, -1));
-
-            i += 1;
         }
 
         max_val
@@ -77,7 +87,7 @@ impl From<String> for Target {
     fn from(str: String) -> Self {
         let mut croped = str.replace("target area: x=", "");
         croped = croped.replace("\n", "");
-        let splitted: Vec<&str> = croped.split(", y=-").collect();
+        let splitted: Vec<&str> = croped.split(", y=").collect();
 
         let x_data: Vec<&str> = splitted[0].split("..").collect();
         let x = [x_data[0].parse().unwrap(), x_data[1].parse().unwrap()];
@@ -97,47 +107,63 @@ impl Target {
             && vec.y() >= min(self.y[0], self.y[1])
     }
 
-    /**
-    Had to reverse enginner it from example because requirements are
-    completely uncler about ranges... I consider this wrong solution.
-    I'm just trying to replicate bug of the author.
-     */
     fn max_x(&self) -> i64 {
         max(self.x[0], self.x[1])
     }
 
-    fn max_y(&self) -> i64 {
-        max(self.y[0], self.y[1])
+    fn min_y(&self) -> i64 {
+        min(self.y[0], self.y[1])
     }
 }
 
-fn part1(position: &Vec2, target: &Target) -> i64 {
+fn parts(position: &Vec2, target: &Target) -> (i64, i64) {
     let pos = position.clone();
 
     let mut max_val = i64::MIN;
+    let mut count = 0;
 
-    // This is where the bug is replicated
-    for x in 0..target.max_x() {
-        for y in 0..target.max_y() {
+    for x in 1..255 {
+        for y in -255..255 {
             let mut p = pos.clone();
-            let val = p.try_max_height(&target, Vec2::new(x, y));
+            let val = p.try_max_height(&target, &Vec2::new(x, y));
+
+            if val != i64::MIN {
+                count += 1;
+            }
 
             max_val = max(max_val, val);
         }
     }
 
-    max_val
+    (max_val, count)
 }
 
-// 1035 -> too low
 fn main() -> Result<(), Box<dyn error::Error>> {
     let init: String = fs::read_to_string("day17/input.txt")?;
 
     let target = Target::from(init);
-    println!("target: {:?}", target);
 
     let pos = Vec2::init();
 
-    println!("part1: {}", part1(&pos, &target));
+    let (p1, p2) = parts(&pos, &target);
+    println!("part1: {}\n part2: {}", p1, p2);
     Ok(())
+}
+
+fn draw_grid<F>(x_range: Range<i64>, y_range: Range<i64>, get_char: F)
+where
+    F: Fn(i64, i64) -> Option<char>,
+{
+    let mut str = "".to_string();
+
+    for y in y_range {
+        for x in x_range.clone() {
+            let chr: char = get_char(x, y).unwrap_or('.');
+            str.push(chr);
+        }
+
+        str.push('\n');
+    }
+
+    print!("{}", str);
 }
